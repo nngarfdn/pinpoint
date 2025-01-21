@@ -28,7 +28,6 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Reduced vertical padding
             child: HeaderWidget(),
           ),
-          // Scrollable Content (Map + Address List)
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
