@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../widget/header_widget.dart';
+import '../widget/item_address_widget.dart';
 import '../widget/maps_widget.dart';
 import '../widget/search_widget.dart';
 
@@ -49,6 +50,26 @@ class _HomePageState extends State<HomePage> {
                   _searchText = value;
                 });
                 print('Search Text: $_searchText'); // Debugging
+              },
+            ),
+            const SizedBox(height: 16),
+            AddressItemWidget(
+              title: 'Rumah Pribadi',
+              address: 'Jl Laskar Jaya no 12, Srandakan, Bantul, Yogyakarta. Indonesia',
+              latitude: '7.324324',
+              longitude: '8.89789547',
+              onEdit: () {
+                print('Edit button pressed');
+              },
+            ),
+            const SizedBox(height: 8),
+            AddressItemWidget(
+              title: 'Rumah Pribadi',
+              address: 'Jl Laskar Jaya no 12, Srandakan, Bantul, Yogyakarta. Indonesia',
+              latitude: '7.324324',
+              longitude: '8.89789547',
+              onEdit: () {
+                print('Edit button pressed');
               },
             ),
           ],
