@@ -2,9 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../widget/header_widget.dart';
 import '../widget/maps_widget.dart';
+import '../widget/search_widget.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +31,24 @@ class HomePage extends StatelessWidget {
             MapWidget(
               center: center,
               onMapCreated: (controller) {
+                print('Map created successfully.');
               },
               onCameraMove: (position) {
+                print('Camera moved to: ${position.target.latitude}, ${position.target.longitude}');
               },
               onMapTapped: (position) {
+                print('Map tapped at: ${position.latitude}, ${position.longitude}');
+              },
+            ),
+            const SizedBox(height: 32), // Spacer for the search bar
+            SearchWidget(
+              hintText: 'Cari Lokasi',
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchText = value;
+                });
+                print('Search Text: $_searchText'); // Debugging
               },
             ),
           ],
