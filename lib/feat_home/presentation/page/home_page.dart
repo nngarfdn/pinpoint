@@ -21,58 +21,84 @@ class _HomePageState extends State<HomePage> {
     final LatLng center = const LatLng(45.521563, -122.677433);
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 32), // Spacer at the top
-            const HeaderWidget(),
-            const SizedBox(height: 16),
-            MapWidget(
-              center: center,
-              onMapCreated: (controller) {
-                print('Map created successfully.');
-              },
-              onCameraMove: (position) {
-                print('Camera moved to: ${position.target.latitude}, ${position.target.longitude}');
-              },
-              onMapTapped: (position) {
-                print('Map tapped at: ${position.latitude}, ${position.longitude}');
-              },
+      body: Column(
+        children: [
+          const SizedBox(height: 48), // Reduced spacing above the header
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Reduced vertical padding
+            child: HeaderWidget(),
+          ),
+          // Scrollable Content (Map + Address List)
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8), // Reduced spacing above the map
+                    MapWidget(
+                      center: center,
+                      onMapCreated: (controller) {
+                        print('Map created successfully.');
+                      },
+                      onCameraMove: (position) {
+                        print('Camera moved to: ${position.target.latitude}, ${position.target.longitude}');
+                      },
+                      onMapTapped: (position) {
+                        print('Map tapped at: ${position.latitude}, ${position.longitude}');
+                      },
+                    ),
+                    const SizedBox(height: 16), // Reduced spacing between map and search
+                    SearchWidget(
+                      hintText: 'Cari Lokasi',
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchText = value;
+                        });
+                        print('Search Text: $_searchText'); // Debugging
+                      },
+                    ),
+                    // Address List
+                    const SizedBox(height: 16), // If you added a SizedBox previously, ensure it is set to 0
+                    ListView.builder(
+                      shrinkWrap: true, // Ensures the list takes only the necessary space
+                      physics: const NeverScrollableScrollPhysics(), // Disables scrolling for the list
+                      padding: EdgeInsets.zero, // Removes any default padding
+                      itemCount: 10, // Number of items in the list
+                      itemBuilder: (context, index) {
+                        final screenHeight = MediaQuery.of(context).size.height;
+
+                        return Container(
+                          margin: EdgeInsets.only(bottom: screenHeight * 0.01), // Dynamically adjust vertical spacing
+                          child: AddressItemWidget(
+                            title: 'Item $index',
+                            address: 'Address for Item $index',
+                            latitude: '7.32432$index',
+                            longitude: '8.89789$index',
+                            onEdit: () {
+                              print('Edit button pressed for Item $index');
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 32), // Spacer for the search bar
-            SearchWidget(
-              hintText: 'Cari Lokasi',
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchText = value;
-                });
-                print('Search Text: $_searchText'); // Debugging
-              },
-            ),
-            const SizedBox(height: 16),
-            AddressItemWidget(
-              title: 'Rumah Pribadi',
-              address: 'Jl Laskar Jaya no 12, Srandakan, Bantul, Yogyakarta. Indonesia',
-              latitude: '7.324324',
-              longitude: '8.89789547',
-              onEdit: () {
-                print('Edit button pressed');
-              },
-            ),
-            const SizedBox(height: 8),
-            AddressItemWidget(
-              title: 'Rumah Pribadi',
-              address: 'Jl Laskar Jaya no 12, Srandakan, Bantul, Yogyakarta. Indonesia',
-              latitude: '7.324324',
-              longitude: '8.89789547',
-              onEdit: () {
-                print('Edit button pressed');
-              },
-            ),
-          ],
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          print('FAB Pressed! Open Add Address Form');
+        },
+        backgroundColor: Colors.blue[700],
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
         ),
       ),
     );
