@@ -19,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late TextEditingController searchController;
+  GoogleMapController? _mapController;
 
   @override
   void initState() {
@@ -30,6 +31,14 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  void focusOnMarker(LatLng position) {
+    if (_mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(position, 15), // Adjust zoom level as needed
+      );
+    }
   }
 
   @override
@@ -54,14 +63,18 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 8),
                     // Map Widget
                     MapWidget(
-                      markers: viewModel.addresses,
+                      mapController: _mapController,
                       onMapCreated: (controller) {
+                        setState(() {
+                          _mapController = controller;
+                        });
                         viewModel.setMapController(controller);
                       },
                       onCameraMove: (position) =>
                           viewModel.selectLocation(position.target),
                       onMapTapped: (position) =>
                           viewModel.selectLocation(position),
+                      markers: viewModel.addresses,
                     ),
                     const SizedBox(height: 16),
                     // Search Widget
@@ -69,55 +82,67 @@ class _HomePageState extends State<HomePage> {
                       hintText: 'Cari Lokasi',
                       controller: searchController,
                       onChanged: (value) {
-                        viewModel.search(value); // Updates the search query
+                        viewModel.search(value);
                       },
                     ),
                     const SizedBox(height: 16),
-                    // Conditional Loading or Address List
                     if (viewModel.isLoading)
                       const Center(child: CircularProgressIndicator()),
                     if (!viewModel.isLoading &&
                         viewModel.filteredAddresses.isEmpty)
-                      const EmptyWidget(),
+                      const EmptyWidget(), // Show EmptyWidget when the list is empty
                     if (!viewModel.isLoading &&
                         viewModel.filteredAddresses.isNotEmpty)
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: viewModel.filteredAddresses.length,
-                        itemBuilder: (context, index) {
-                          final address = viewModel.filteredAddresses[index];
-                          return AddressItemWidget(
-                            title: address.name,
-                            address: address.address,
-                            latitude: address.latitude,
-                            longitude: address.longitude,
-                            onEdit: () {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (context) => BottomSheetForm(
-                                  initialName: address.name,
-                                  initialAddress: address.address,
-                                  initialLatitude: address.latitude,
-                                  initialLongitude: address.longitude,
-                                  onSubmit:
-                                      (name, updatedAddress, latitude, longitude) {
-                                    viewModel.updateAddress(index,
+                      MediaQuery.removePadding(
+                        context: context,
+                        removeTop: true,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: viewModel.filteredAddresses.length,
+                          itemBuilder: (context, index) {
+                            final address = viewModel.filteredAddresses[index];
+                            return AddressItemWidget(
+                              title: address.name,
+                              address: address.address,
+                              latitude: address.latitude,
+                              longitude: address.longitude,
+                              onTap: () {
+                                final position = LatLng(
+                                  double.parse(address.latitude),
+                                  double.parse(address.longitude),
+                                );
+                                focusOnMarker(position);
+                              },
+                              onEdit: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => BottomSheetForm(
+                                    initialName: address.name,
+                                    initialAddress: address.address,
+                                    initialLatitude: address.latitude,
+                                    initialLongitude: address.longitude,
+                                    onSubmit: (name, updatedAddress, latitude,
+                                        longitude) {
+                                      viewModel.updateAddress(
+                                        index,
                                         AddressEntity(
                                           name: name,
                                           address: updatedAddress,
                                           latitude: latitude,
                                           longitude: longitude,
-                                        ));
-                                  },
-                                  onDelete: () {
-                                    viewModel.deleteAddress(index);
-                                  },
-                                ),
-                              );
-                            },
-                          );
-                        },
+                                        ),
+                                      );
+                                    },
+                                    onDelete: () {
+                                      viewModel.deleteAddress(index);
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                   ],
                 ),
@@ -148,4 +173,5 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 }

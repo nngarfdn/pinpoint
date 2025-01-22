@@ -4,26 +4,26 @@ import '../../../feat_full_screen_map/full_screen_map_page.dart';
 import '../../../feat_home/domain/model/address_entity.dart';
 
 class MapWidget extends StatelessWidget {
+  final GoogleMapController? mapController;
   final Function(GoogleMapController) onMapCreated;
   final Function(CameraPosition) onCameraMove;
   final Function(LatLng) onMapTapped;
-  final List<AddressEntity> markers; // Add a list of AddressEntity for markers
+  final List<AddressEntity> markers;
 
   const MapWidget({
     super.key,
+    required this.mapController,
     required this.onMapCreated,
     required this.onCameraMove,
     required this.onMapTapped,
-    required this.markers, // Required parameter for markers
+    required this.markers,
   });
 
   LatLng _calculateCenter() {
     if (markers.isEmpty) {
-      // Default center if no markers are available
       return const LatLng(-7.967917829848784, 110.21875865100343);
     }
 
-    // Calculate the average latitude and longitude of all markers
     final double averageLatitude = markers
         .map((marker) => double.parse(marker.latitude))
         .reduce((a, b) => a + b) /
@@ -37,9 +37,16 @@ class MapWidget extends StatelessWidget {
     return LatLng(averageLatitude, averageLongitude);
   }
 
+  void _showMarkerInfoWindows(GoogleMapController controller) {
+    // Loop through each marker and show its info window
+    for (var address in markers) {
+      controller.showMarkerInfoWindow(MarkerId(address.name));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final LatLng center = _calculateCenter(); // Dynamically calculate the center
+    final LatLng center = _calculateCenter();
 
     return Card(
       elevation: 6,
@@ -48,17 +55,25 @@ class MapWidget extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          // Google Map
           SizedBox(
             height: 250,
             width: double.infinity,
             child: GoogleMap(
-              onMapCreated: (controller) => onMapCreated(controller),
+              onMapCreated: (controller) {
+                onMapCreated(controller);
+
+                // Automatically show info windows for all markers
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  _showMarkerInfoWindows(controller);
+                });
+              },
               initialCameraPosition: CameraPosition(
                 target: center,
                 zoom: 10,
               ),
-              onCameraMove: (position) => onCameraMove(position),
-              onTap: (position) => onMapTapped(position),
+              onCameraMove: onCameraMove,
+              onTap: onMapTapped,
               markers: markers
                   .map((address) => Marker(
                 markerId: MarkerId(address.name),
@@ -67,13 +82,14 @@ class MapWidget extends StatelessWidget {
                   double.parse(address.longitude),
                 ),
                 infoWindow: InfoWindow(
-                  title: address.name,
-                  snippet: address.address,
+                  title: address.name, // Marker title
+                  snippet: address.address, // Marker subtitle
                 ),
               ))
                   .toSet(),
             ),
           ),
+          // Fullscreen Button
           Positioned(
             top: 8,
             right: 8,
@@ -86,27 +102,27 @@ class MapWidget extends StatelessWidget {
                       onMapCreated: onMapCreated,
                       onCameraMove: onCameraMove,
                       onMapTapped: onMapTapped,
-                      markers: markers, // Pass the markers to the fullscreen map
+                      markers: markers,
                     ),
                   ),
                 );
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white, // Background color
-                  shape: BoxShape.circle, // Makes it circular
+                  color: Colors.white,
+                  shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black26, // Shadow color
-                      blurRadius: 6, // Shadow blur
-                      offset: const Offset(0, 2), // Shadow position
+                      color: Colors.black26,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(8), // Inner padding for icon
+                padding: const EdgeInsets.all(8),
                 child: const Icon(
                   Icons.fullscreen,
-                  color: Colors.blue, // Icon color
+                  color: Colors.blue,
                   size: 28,
                 ),
               ),
@@ -117,3 +133,4 @@ class MapWidget extends StatelessWidget {
     );
   }
 }
+
