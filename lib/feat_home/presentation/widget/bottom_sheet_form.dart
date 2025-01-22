@@ -2,10 +2,20 @@ import 'package:flutter/material.dart';
 
 class BottomSheetForm extends StatefulWidget {
   final Function(String, String, String, String) onSubmit;
+  final VoidCallback? onDelete; // Optional callback for delete
+  final String? initialName; // For auto-filling during updates
+  final String? initialAddress;
+  final String? initialLatitude;
+  final String? initialLongitude;
 
   const BottomSheetForm({
     super.key,
     required this.onSubmit,
+    this.onDelete,
+    this.initialName,
+    this.initialAddress,
+    this.initialLatitude,
+    this.initialLongitude,
   });
 
   @override
@@ -15,10 +25,32 @@ class BottomSheetForm extends StatefulWidget {
 class _BottomSheetFormState extends State<BottomSheetForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _namaController = TextEditingController();
-  final TextEditingController _alamatController = TextEditingController();
-  final TextEditingController _latitudeController = TextEditingController();
-  final TextEditingController _longitudeController = TextEditingController();
+  late TextEditingController _namaController;
+  late TextEditingController _alamatController;
+  late TextEditingController _latitudeController;
+  late TextEditingController _longitudeController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize controllers with initial values (if provided)
+    _namaController = TextEditingController(text: widget.initialName ?? '');
+    _alamatController = TextEditingController(text: widget.initialAddress ?? '');
+    _latitudeController =
+        TextEditingController(text: widget.initialLatitude ?? '');
+    _longitudeController =
+        TextEditingController(text: widget.initialLongitude ?? '');
+  }
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _alamatController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +67,7 @@ class _BottomSheetFormState extends State<BottomSheetForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Tambah Lokasi',
+            'Tambah/Update Lokasi',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -161,6 +193,29 @@ class _BottomSheetFormState extends State<BottomSheetForm> {
                     ),
                   ),
                 ),
+                // Delete Button (Optional)
+                if (widget.onDelete != null) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        widget.onDelete!();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        backgroundColor: Colors.red[700],
+                      ),
+                      child: const Text(
+                        'Hapus',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
