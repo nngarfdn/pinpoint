@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pinpoint/feat_home/domain/model/address_entity.dart';
 
-class FullScreenMap extends StatelessWidget {
+class FullScreenMap extends StatefulWidget {
   final Function(GoogleMapController) onMapCreated;
   final Function(CameraPosition) onCameraMove;
   final Function(LatLng) onMapTapped;
@@ -16,8 +16,15 @@ class FullScreenMap extends StatelessWidget {
     required this.markers,
   });
 
+  @override
+  _FullScreenMapState createState() => _FullScreenMapState();
+}
+
+class _FullScreenMapState extends State<FullScreenMap> {
+  MapType _currentMapType = MapType.normal; // Default map type
+
   LatLngBounds _calculateBounds() {
-    if (markers.isEmpty) {
+    if (widget.markers.isEmpty) {
       // Default bounds if no markers are available
       return LatLngBounds(
         southwest: const LatLng(-7.967917829848784, 110.21875865100343),
@@ -30,7 +37,7 @@ class FullScreenMap extends StatelessWidget {
     double minLng = double.infinity;
     double maxLng = double.negativeInfinity;
 
-    for (var marker in markers) {
+    for (var marker in widget.markers) {
       final lat = double.parse(marker.latitude);
       final lng = double.parse(marker.longitude);
 
@@ -51,6 +58,12 @@ class FullScreenMap extends StatelessWidget {
     controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
   }
 
+  void _changeMapType(MapType mapType) {
+    setState(() {
+      _currentMapType = mapType; // Update the map type
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,32 +81,85 @@ class FullScreenMap extends StatelessWidget {
           },
         ),
       ),
-      body: GoogleMap(
-        onMapCreated: (controller) {
-          onMapCreated(controller);
-          Future.delayed(const Duration(milliseconds: 500), () {
-            _centerMapOnBounds(controller); // Center map dynamically
-          });
-        },
-        initialCameraPosition: CameraPosition(
-          target: const LatLng(-7.967917829848784, 110.21875865100343), // Default center
-          zoom: 10,
-        ),
-        onCameraMove: (position) => onCameraMove(position),
-        onTap: (position) => onMapTapped(position),
-        markers: markers
-            .map((address) => Marker(
-          markerId: MarkerId(address.name),
-          position: LatLng(
-            double.parse(address.latitude),
-            double.parse(address.longitude),
+      body: Stack(
+        children: [
+          // Google Map
+          GoogleMap(
+            mapType: _currentMapType, // Set the current map type
+            onMapCreated: (controller) {
+              widget.onMapCreated(controller);
+              Future.delayed(const Duration(milliseconds: 500), () {
+                _centerMapOnBounds(controller); // Center map dynamically
+              });
+            },
+            initialCameraPosition: CameraPosition(
+              target: const LatLng(-7.967917829848784, 110.21875865100343), // Default center
+              zoom: 10,
+            ),
+            onCameraMove: (position) => widget.onCameraMove(position),
+            onTap: (position) => widget.onMapTapped(position),
+            markers: widget.markers
+                .map((address) => Marker(
+              markerId: MarkerId(address.name),
+              position: LatLng(
+                double.parse(address.latitude),
+                double.parse(address.longitude),
+              ),
+              infoWindow: InfoWindow(
+                title: address.name, // Marker title
+                snippet: address.address, // Marker subtitle
+              ),
+            ))
+                .toSet(),
           ),
-          infoWindow: InfoWindow(
-            title: address.name, // Marker title
-            snippet: address.address, // Marker subtitle
+          // Map Type Selector (Top Left)
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // White background
+                shape: BoxShape.circle, // Circular shape
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26, // Shadow color
+                    blurRadius: 6, // Shadow blur radius
+                    offset: const Offset(0, 2), // Shadow offset
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(0), // Padding inside the circle
+              child: PopupMenuButton<MapType>(
+                icon: const Icon(
+                  Icons.layers, // Icon for map type selector
+                  color: Colors.blue, // Icon color
+                  size: 28, // Icon size
+                ),
+                onSelected: (MapType selectedMapType) {
+                  _changeMapType(selectedMapType); // Change the map type
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: MapType.normal,
+                    child: Text('Normal'),
+                  ),
+                  const PopupMenuItem(
+                    value: MapType.satellite,
+                    child: Text('Satellite'),
+                  ),
+                  const PopupMenuItem(
+                    value: MapType.terrain,
+                    child: Text('Terrain'),
+                  ),
+                  const PopupMenuItem(
+                    value: MapType.hybrid,
+                    child: Text('Hybrid'),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ))
-            .toSet(),
+        ],
       ),
     );
   }

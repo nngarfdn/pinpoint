@@ -198,23 +198,51 @@ class _BottomSheetFormState extends State<BottomSheetForm> {
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: OutlinedButton(
                       onPressed: () {
-                        widget.onDelete!();
-                        Navigator.pop(context);
+                        // Show a confirmation dialog
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text("Konfirmasi"),
+                              content: const Text("Apakah Anda yakin ingin menghapus?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(); // Close the dialog
+                                  },
+                                  child: const Text("Batal"),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    widget.onDelete!(); // Call the delete function
+                                    Navigator.of(context).pop(); // Close the dialog
+                                    Navigator.of(context).pop(); // Close the current screen
+                                  },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red, // Red confirmation button
+                                  ),
+                                  child: const Text("Hapus"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
                       },
-                      style: ElevatedButton.styleFrom(
+                      style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        backgroundColor: Colors.red[700],
+                        side: BorderSide(color: Colors.red[700]!), // Outline color
                       ),
                       child: const Text(
                         'Hapus',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.red), // Text color matching outline
                       ),
                     ),
                   ),
+
                 ],
               ],
             ),

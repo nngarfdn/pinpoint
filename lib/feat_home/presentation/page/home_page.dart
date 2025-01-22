@@ -102,44 +102,46 @@ class _HomePageState extends State<HomePage> {
                           itemCount: viewModel.filteredAddresses.length,
                           itemBuilder: (context, index) {
                             final address = viewModel.filteredAddresses[index];
-                            return AddressItemWidget(
-                              title: address.name,
-                              address: address.address,
-                              latitude: address.latitude,
-                              longitude: address.longitude,
-                              onTap: () {
-                                final position = LatLng(
-                                  double.parse(address.latitude),
-                                  double.parse(address.longitude),
-                                );
-                                focusOnMarker(position);
-                              },
-                              onEdit: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) => BottomSheetForm(
-                                    initialName: address.name,
-                                    initialAddress: address.address,
-                                    initialLatitude: address.latitude,
-                                    initialLongitude: address.longitude,
-                                    onSubmit: (name, updatedAddress, latitude,
-                                        longitude) {
-                                      viewModel.updateAddress(
-                                        index,
-                                        AddressEntity(
-                                          name: name,
-                                          address: updatedAddress,
-                                          latitude: latitude,
-                                          longitude: longitude,
-                                        ),
-                                      );
-                                    },
-                                    onDelete: () {
-                                      viewModel.deleteAddress(index);
-                                    },
-                                  ),
-                                );
-                              },
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0), // Add 8dp bottom padding
+                              child: AddressItemWidget(
+                                title: address.name,
+                                address: address.address,
+                                latitude: address.latitude,
+                                longitude: address.longitude,
+                                onTap: () {
+                                  final position = LatLng(
+                                    double.parse(address.latitude),
+                                    double.parse(address.longitude),
+                                  );
+                                  focusOnMarker(position);
+                                },
+                                onEdit: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) => BottomSheetForm(
+                                      initialName: address.name,
+                                      initialAddress: address.address,
+                                      initialLatitude: address.latitude,
+                                      initialLongitude: address.longitude,
+                                      onSubmit: (name, updatedAddress, latitude, longitude) {
+                                        viewModel.updateAddress(
+                                          index,
+                                          AddressEntity(
+                                            name: name,
+                                            address: updatedAddress,
+                                            latitude: latitude,
+                                            longitude: longitude,
+                                          ),
+                                        );
+                                      },
+                                      onDelete: () {
+                                        viewModel.deleteAddress(index);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
                             );
                           },
                         ),
