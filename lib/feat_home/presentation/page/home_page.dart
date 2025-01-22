@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pinpoint/feat_home/presentation/widget/empty_widget.dart';
 import '../widget/header_widget.dart';
 import '../widget/item_address_widget.dart';
 import '../widget/maps_widget.dart';
 import '../widget/search_widget.dart';
+import '../widget/bottom_sheet_form.dart'; // Import the BottomSheetForm widget
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,6 +17,31 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+
+  // Function to show the BottomSheetForm
+  void _showBottomSheetForm(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(16),
+        ),
+      ),
+      builder: (context) {
+        return BottomSheetForm(
+          onSubmit: (nama, alamat, latitude, longitude) {
+            // Handle submitted data from the form
+            print('Nama: $nama');
+            print('Alamat: $alamat');
+            print('Latitude: $latitude');
+            print('Longitude: $longitude');
+            // TODO: Add logic to save the address to the list
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,30 +86,8 @@ class _HomePageState extends State<HomePage> {
                         print('Search Text: $_searchText'); // Debugging
                       },
                     ),
-                    // Address List
-                    const SizedBox(height: 16), // If you added a SizedBox previously, ensure it is set to 0
-                    ListView.builder(
-                      shrinkWrap: true, // Ensures the list takes only the necessary space
-                      physics: const NeverScrollableScrollPhysics(), // Disables scrolling for the list
-                      padding: EdgeInsets.zero, // Removes any default padding
-                      itemCount: 10, // Number of items in the list
-                      itemBuilder: (context, index) {
-                        final screenHeight = MediaQuery.of(context).size.height;
-
-                        return Container(
-                          margin: EdgeInsets.only(bottom: screenHeight * 0.01), // Dynamically adjust vertical spacing
-                          child: AddressItemWidget(
-                            title: 'Item $index',
-                            address: 'Address for Item $index',
-                            latitude: '7.32432$index',
-                            longitude: '8.89789$index',
-                            onEdit: () {
-                              print('Edit button pressed for Item $index');
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                    const SizedBox(height: 16), // Reduced spacing before the address list
+                    EmptyWidget(), // Show the EmptyWidget if there are no addresses
                   ],
                 ),
               ),
@@ -92,7 +97,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print('FAB Pressed! Open Add Address Form');
+          _showBottomSheetForm(context); // Show the BottomSheetForm
         },
         backgroundColor: Colors.blue[700],
         child: const Icon(
