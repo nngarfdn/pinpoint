@@ -164,6 +164,11 @@ class _HomePageState extends State<HomePage> {
                   latitude: latitude,
                   longitude: longitude,
                 ));
+                final position = LatLng(
+                  double.parse(latitude),
+                  double.parse(longitude),
+                );
+                focusOnMarker(position);
               },
             ),
           );

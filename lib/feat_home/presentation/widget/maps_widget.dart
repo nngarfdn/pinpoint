@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../feat_full_screen_map/full_screen_map_page.dart';
 import '../../../feat_home/domain/model/address_entity.dart';
 
-class MapWidget extends StatelessWidget {
+class MapWidget extends StatefulWidget {
   final GoogleMapController? mapController;
   final Function(GoogleMapController) onMapCreated;
   final Function(CameraPosition) onCameraMove;
@@ -19,29 +19,35 @@ class MapWidget extends StatelessWidget {
     required this.markers,
   });
 
+  @override
+  _MapWidgetState createState() => _MapWidgetState();
+}
+
+class _MapWidgetState extends State<MapWidget> {
+  MapType _currentMapType = MapType.normal; // Default map type
+
   LatLng _calculateCenter() {
-    if (markers.isEmpty) {
+    if (widget.markers.isEmpty) {
       return const LatLng(-7.967917829848784, 110.21875865100343);
     }
 
-    final double averageLatitude = markers
+    final double averageLatitude = widget.markers
         .map((marker) => double.parse(marker.latitude))
         .reduce((a, b) => a + b) /
-        markers.length;
+        widget.markers.length;
 
-    final double averageLongitude = markers
+    final double averageLongitude = widget.markers
         .map((marker) => double.parse(marker.longitude))
         .reduce((a, b) => a + b) /
-        markers.length;
+        widget.markers.length;
 
     return LatLng(averageLatitude, averageLongitude);
   }
 
-  void _showMarkerInfoWindows(GoogleMapController controller) {
-    // Loop through each marker and show its info window
-    for (var address in markers) {
-      controller.showMarkerInfoWindow(MarkerId(address.name));
-    }
+  void _changeMapType(MapType mapType) {
+    setState(() {
+      _currentMapType = mapType; // Update the map type
+    });
   }
 
   @override
@@ -60,21 +66,17 @@ class MapWidget extends StatelessWidget {
             height: 250,
             width: double.infinity,
             child: GoogleMap(
+              mapType: _currentMapType, // Set the current map type
               onMapCreated: (controller) {
-                onMapCreated(controller);
-
-                // Automatically show info windows for all markers
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  _showMarkerInfoWindows(controller);
-                });
+                widget.onMapCreated(controller);
               },
               initialCameraPosition: CameraPosition(
                 target: center,
                 zoom: 10,
               ),
-              onCameraMove: onCameraMove,
-              onTap: onMapTapped,
-              markers: markers
+              onCameraMove: widget.onCameraMove,
+              onTap: widget.onMapTapped,
+              markers: widget.markers
                   .map((address) => Marker(
                 markerId: MarkerId(address.name),
                 position: LatLng(
@@ -82,8 +84,8 @@ class MapWidget extends StatelessWidget {
                   double.parse(address.longitude),
                 ),
                 infoWindow: InfoWindow(
-                  title: address.name, // Marker title
-                  snippet: address.address, // Marker subtitle
+                  title: address.name,
+                  snippet: address.address,
                 ),
               ))
                   .toSet(),
@@ -99,10 +101,10 @@ class MapWidget extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => FullScreenMap(
-                      onMapCreated: onMapCreated,
-                      onCameraMove: onCameraMove,
-                      onMapTapped: onMapTapped,
-                      markers: markers,
+                      onMapCreated: widget.onMapCreated,
+                      onCameraMove: widget.onCameraMove,
+                      onMapTapped: widget.onMapTapped,
+                      markers: widget.markers,
                     ),
                   ),
                 );
@@ -128,9 +130,56 @@ class MapWidget extends StatelessWidget {
               ),
             ),
           ),
+          // Map Type Selector (Single Icon with Dropdown)
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // White background
+                shape: BoxShape.circle, // Circular shape
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26, // Shadow color
+                    blurRadius: 6, // Shadow blur radius
+                    offset: const Offset(0, 2), // Shadow offset
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(0), // Padding inside the circle
+              child: PopupMenuButton<MapType>(
+                icon: const Icon(
+                  Icons.layers, // Icon for map type selector
+                  color: Colors.blue, // Icon color
+                  size: 28, // Icon size
+                ),
+                onSelected: (MapType selectedMapType) {
+                  _changeMapType(selectedMapType); // Change the map type
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: MapType.normal,
+                    child: Text('Normal'),
+                  ),
+                  const PopupMenuItem(
+                    value: MapType.satellite,
+                    child: Text('Satellite'),
+                  ),
+                  const PopupMenuItem(
+                    value: MapType.terrain,
+                    child: Text('Terrain'),
+                  ),
+                  const PopupMenuItem(
+                    value: MapType.hybrid,
+                    child: Text('Hybrid'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
         ],
       ),
     );
   }
 }
-

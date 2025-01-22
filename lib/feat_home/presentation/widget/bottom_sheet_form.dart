@@ -195,7 +195,7 @@ class _BottomSheetFormState extends State<BottomSheetForm> {
                 ),
                 // Delete Button (Optional)
                 if (widget.onDelete != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

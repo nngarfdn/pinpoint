@@ -16,37 +16,67 @@ class FullScreenMap extends StatelessWidget {
     required this.markers,
   });
 
-  LatLng _calculateCenter() {
+  LatLngBounds _calculateBounds() {
     if (markers.isEmpty) {
-      return const LatLng(-7.967917829848784, 110.21875865100343);
+      // Default bounds if no markers are available
+      return LatLngBounds(
+        southwest: const LatLng(-7.967917829848784, 110.21875865100343),
+        northeast: const LatLng(-7.967917829848784, 110.21875865100343),
+      );
     }
 
-    final double averageLatitude = markers
-        .map((marker) => double.parse(marker.latitude))
-        .reduce((a, b) => a + b) /
-        markers.length;
+    double minLat = double.infinity;
+    double maxLat = double.negativeInfinity;
+    double minLng = double.infinity;
+    double maxLng = double.negativeInfinity;
 
-    final double averageLongitude = markers
-        .map((marker) => double.parse(marker.longitude))
-        .reduce((a, b) => a + b) /
-        markers.length;
+    for (var marker in markers) {
+      final lat = double.parse(marker.latitude);
+      final lng = double.parse(marker.longitude);
 
-    return LatLng(averageLatitude, averageLongitude);
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+  }
+
+  void _centerMapOnBounds(GoogleMapController controller) {
+    final bounds = _calculateBounds();
+    controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
   }
 
   @override
   Widget build(BuildContext context) {
-    final LatLng center = _calculateCenter();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fullscreen Map'),
+        title: const Text(
+          'Fullscreen Map',
+          style: TextStyle(color: Colors.white), // Set title color to white
+        ),
         backgroundColor: Colors.blue[700],
+        iconTheme: const IconThemeData(color: Colors.white), // Set icon color to white
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), // Back button
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
       ),
       body: GoogleMap(
-        onMapCreated: (controller) => onMapCreated(controller),
+        onMapCreated: (controller) {
+          onMapCreated(controller);
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _centerMapOnBounds(controller); // Center map dynamically
+          });
+        },
         initialCameraPosition: CameraPosition(
-          target: center,
+          target: const LatLng(-7.967917829848784, 110.21875865100343), // Default center
           zoom: 10,
         ),
         onCameraMove: (position) => onCameraMove(position),
@@ -59,8 +89,8 @@ class FullScreenMap extends StatelessWidget {
             double.parse(address.longitude),
           ),
           infoWindow: InfoWindow(
-            title: address.name,
-            snippet: address.address,
+            title: address.name, // Marker title
+            snippet: address.address, // Marker subtitle
           ),
         ))
             .toSet(),
