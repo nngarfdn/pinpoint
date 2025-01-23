@@ -1,16 +1,34 @@
-# pinpoint
+# PinPoint
 
-A new Flutter project.
+PinPoint is a Flutter-based mobile application that allows users to manage location data efficiently. With an interactive map powered by Google Maps, users can add, update, delete, and search for saved locations.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Interactive Map**:
+  - View all saved locations on a map.
+  - Center the map dynamically based on saved locations.
+  - Toggle between different map types: Normal, Satellite, Terrain, and Hybrid.
+  - Navigate to a fullscreen map view for better visibility.
 
-A few resources to get you started if this is your first Flutter project:
+- **Location Management**:
+  - Add new locations with details like name, address, latitude, and longitude.
+  - Edit or update existing locations.
+  - Delete locations from the list.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Search Functionality**:
+  - Filter locations by name or address using the search bar.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Offline Storage**:
+  - All locations are stored locally using Hive, ensuring fast and secure access even without an internet connection.
+
+## Dependencies
+
+- `flutter`
+- `google_maps_flutter`: For rendering Google Maps and interacting with markers.
+- `hive`: For local database storage.
+- `provider`: For state management.
+- `get_it`: For dependency injection.
+
+## Screenshots
+
+![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
