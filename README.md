@@ -29,6 +29,11 @@ PinPoint is a Flutter-based mobile application that allows users to manage locat
 - `provider`: For state management.
 - `get_it`: For dependency injection.
 
-## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+## Demo
+
+### Android
+[PinPoint Android Demo](https://drive.google.com/file/d/1jg9W9XZebDXZMgrGz_dZDsLGPdCaoROE/view?usp=sharing)
+
+### iOS
+[PinPoint iOS Demo](https://drive.google.com/file/d/1BJmNa31jj6Ve55hU9pokrsiBlS5UrH4J/view?usp=sharing)
